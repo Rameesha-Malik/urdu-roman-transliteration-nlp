@@ -311,8 +311,8 @@ def load_model_and_tokenizers():
         urdu_tokenizer = CustomBPETokenizer()
         roman_tokenizer = CustomBPETokenizer()
         
-        urdu_tokenizer.load('processed_data/urdu_tokenizer.pkl')
-        roman_tokenizer.load('processed_data/roman_tokenizer.pkl')
+        urdu_tokenizer.load('/urdu_tokenizer.pkl')
+        roman_tokenizer.load('/roman_tokenizer.pkl')
 
         # Create vocabularies with special tokens
         urdu_vocab = urdu_tokenizer.vocab.copy()
