@@ -302,17 +302,17 @@ class Seq2SeqModel(nn.Module):
 # ========================================
 # LOADING FUNCTIONS
 # ========================================
-
 @st.cache_resource
 def load_model_and_tokenizers():
     """Load your trained model and custom tokenizers"""
     try:
-        # Load your custom tokenizers
+        # Load your custom tokenizers - FIXED PATHS
         urdu_tokenizer = CustomBPETokenizer()
         roman_tokenizer = CustomBPETokenizer()
         
-        urdu_tokenizer.load('/urdu_tokenizer.pkl')
-        roman_tokenizer.load('/roman_tokenizer.pkl')
+        # Updated file paths to match your uploaded files
+        urdu_tokenizer.load('processed_data/urdu_tokenizer.pkl')  # Added processed_data/
+        roman_tokenizer.load('processed_data/roman_tokenizer.pkl')  # Added processed_data/
 
         # Create vocabularies with special tokens
         urdu_vocab = urdu_tokenizer.vocab.copy()
@@ -330,7 +330,7 @@ def load_model_and_tokenizers():
         urdu_idx2token = {idx: token for token, idx in urdu_vocab.items()}
         roman_idx2token = {idx: token for token, idx in roman_vocab.items()}
 
-        # Load your best model (Experiment_3_Dropout05)
+        # Load your best model - UPDATED MODEL NAME
         model = Seq2SeqModel(
             urdu_vocab_size=len(urdu_vocab),
             roman_vocab_size=len(roman_vocab),
@@ -339,12 +339,38 @@ def load_model_and_tokenizers():
             decoder_hidden_size=512,
             encoder_layers=2,
             decoder_layers=4,
-            dropout=0.5  # Best config from your experiments
+            dropout=0.3  # Changed from 0.5 to match your actual best model
         )
         
-        # Load trained weights
-        model.load_state_dict(torch.load('Experiment_3_Dropout05_model.pth', map_location='cpu'))
-        model.eval()
+        # Try to load the best available model - UPDATED MODEL PATHS
+        model_paths = [
+            'best_model.pth',                    # Try this first
+            'Experiment_4_LR0005_model.pth',     # Your actual best model
+            'Experiment_3_Dropout05_model.pth',  # Fallback
+            'model.pth'                          # Generic fallback
+        ]
+        
+        model_loaded = False
+        for model_path in model_paths:
+            try:
+                checkpoint = torch.load(model_path, map_location='cpu')
+                if 'model_state_dict' in checkpoint:
+                    model.load_state_dict(checkpoint['model_state_dict'])
+                else:
+                    model.load_state_dict(checkpoint)
+                model.eval()
+                model_loaded = True
+                st.success(f"Model loaded successfully: {model_path}")
+                break
+            except FileNotFoundError:
+                continue
+            except Exception as e:
+                st.warning(f"Failed to load {model_path}: {str(e)}")
+                continue
+        
+        if not model_loaded:
+            st.error("Could not load any model file")
+            return None, None, None, None, None, None, None
         
         return model, urdu_tokenizer, roman_tokenizer, urdu_vocab, roman_vocab, urdu_idx2token, roman_idx2token
         
@@ -354,9 +380,13 @@ def load_model_and_tokenizers():
         st.code("""
         - processed_data/urdu_tokenizer.pkl
         - processed_data/roman_tokenizer.pkl  
-        - Experiment_3_Dropout05_model.pth
+        - best_model.pth (or Experiment_4_LR0005_model.pth)
         """)
         return None, None, None, None, None, None, None
+    except Exception as e:
+        st.error(f"Error loading model: {str(e)}")
+        return None, None, None, None, None, None, None
+        
 
 def translate_text(model, urdu_tokenizer, roman_tokenizer, text, urdu_vocab, roman_vocab, urdu_idx2token, roman_idx2token, max_length=50):
     """Translate Urdu text using your exact pipeline"""
