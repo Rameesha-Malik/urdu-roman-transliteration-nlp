@@ -302,17 +302,19 @@ class Seq2SeqModel(nn.Module):
 # ========================================
 # LOADING FUNCTIONS
 # ========================================
+
+
 @st.cache_resource
 def load_model_and_tokenizers():
     """Load your trained model and custom tokenizers"""
     try:
-        # Load your custom tokenizers - FIXED PATHS
+        # Load your custom tokenizers - UPDATED PATHS
         urdu_tokenizer = CustomBPETokenizer()
         roman_tokenizer = CustomBPETokenizer()
         
-        # Updated file paths to match your uploaded files
-        urdu_tokenizer.load('processed_data/urdu_tokenizer.pkl')  # Added processed_data/
-        roman_tokenizer.load('processed_data/roman_tokenizer.pkl')  # Added processed_data/
+        # Look for files in root directory (since you uploaded directly)
+        urdu_tokenizer.load('urdu_tokenizer.pkl')  # Removed processed_data/
+        roman_tokenizer.load('roman_tokenizer.pkl')  # Removed processed_data/
 
         # Create vocabularies with special tokens
         urdu_vocab = urdu_tokenizer.vocab.copy()
@@ -330,7 +332,7 @@ def load_model_and_tokenizers():
         urdu_idx2token = {idx: token for token, idx in urdu_vocab.items()}
         roman_idx2token = {idx: token for token, idx in roman_vocab.items()}
 
-        # Load your best model - UPDATED MODEL NAME
+        # Load your best model
         model = Seq2SeqModel(
             urdu_vocab_size=len(urdu_vocab),
             roman_vocab_size=len(roman_vocab),
@@ -339,15 +341,14 @@ def load_model_and_tokenizers():
             decoder_hidden_size=512,
             encoder_layers=2,
             decoder_layers=4,
-            dropout=0.3  # Changed from 0.5 to match your actual best model
+            dropout=0.3
         )
         
-        # Try to load the best available model - UPDATED MODEL PATHS
+        # Load trained weights - look in root directory
         model_paths = [
-            'best_model.pth',                    # Try this first
-            'Experiment_4_LR0005_model.pth',     # Your actual best model
-            'Experiment_3_Dropout05_model.pth',  # Fallback
-            'model.pth'                          # Generic fallback
+            'best_model.pth',
+            'Experiment_4_LR0005_model.pth',
+            'Experiment_3_Dropout05_model.pth'
         ]
         
         model_loaded = False
@@ -371,6 +372,21 @@ def load_model_and_tokenizers():
         if not model_loaded:
             st.error("Could not load any model file")
             return None, None, None, None, None, None, None
+        
+        return model, urdu_tokenizer, roman_tokenizer, urdu_vocab, roman_vocab, urdu_idx2token, roman_idx2token
+        
+    except FileNotFoundError as e:
+        st.error(f"Tokenizer files not found: {str(e)}")
+        st.error("Please ensure these files are in the root directory:")
+        st.code("""
+        - urdu_tokenizer.pkl
+        - roman_tokenizer.pkl  
+        - best_model.pth
+        """)
+        return None, None, None, None, None, None, None
+    except Exception as e:
+        st.error(f"Error loading model: {str(e)}")
+        return None, None, None, None, None, None, None
         
         return model, urdu_tokenizer, roman_tokenizer, urdu_vocab, roman_vocab, urdu_idx2token, roman_idx2token
         
