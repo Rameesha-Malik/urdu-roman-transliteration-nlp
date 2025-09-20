@@ -346,9 +346,7 @@ def load_model_and_tokenizers():
         
         # Load trained weights - look in root directory
         model_paths = [
-            'best_model.pth',
-            'Experiment_4_LR0005_model.pth',
-            'Experiment_3_Dropout05_model.pth'
+            'best_model.pth'
         ]
         
         model_loaded = False
@@ -394,9 +392,9 @@ def load_model_and_tokenizers():
         st.error(f"Model files not found: {str(e)}")
         st.error("Please ensure the following files are in the correct directory:")
         st.code("""
-        - processed_data/urdu_tokenizer.pkl
-        - processed_data/roman_tokenizer.pkl  
-        - best_model.pth (or Experiment_4_LR0005_model.pth)
+        - /urdu_tokenizer.pkl
+        - /roman_tokenizer.pkl  
+        - best_model.pth
         """)
         return None, None, None, None, None, None, None
     except Exception as e:
@@ -723,7 +721,6 @@ tokens = urdu_tokenizer.tokenize("یہ ایک جملہ ہے")
         st.error("⚠️ Unable to load the translation model.")
         st.markdown("### 📋 Required Files:")
         st.code("""
-processed_data/
 ├── urdu_tokenizer.pkl      # Your custom BPE tokenizer for Urdu
 ├── roman_tokenizer.pkl     # Your custom BPE tokenizer for Roman Urdu
 └── ...
