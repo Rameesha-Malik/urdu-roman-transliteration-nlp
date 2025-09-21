@@ -311,8 +311,8 @@ def load_model_and_tokenizers():
         urdu_tokenizer = CustomBPETokenizer()
         roman_tokenizer = CustomBPETokenizer()
         
-        urdu_tokenizer.load('processed_data/urdu_tokenizer.pkl')
-        roman_tokenizer.load('processed_data/roman_tokenizer.pkl')
+        urdu_tokenizer.load('urdu_tokenizer.pkl')
+        roman_tokenizer.load('roman_tokenizer.pkl')
 
         # Create vocabularies with special tokens
         urdu_vocab = urdu_tokenizer.vocab.copy()
@@ -343,18 +343,18 @@ def load_model_and_tokenizers():
         )
         
         # Load trained weights
-        model.load_state_dict(torch.load('Experiment_3_Dropout05_model.pth', map_location='cpu'))
+        model.load_state_dict(torch.load('model.pth', map_location='cpu'))
         model.eval()
         
         return model, urdu_tokenizer, roman_tokenizer, urdu_vocab, roman_vocab, urdu_idx2token, roman_idx2token
         
     except FileNotFoundError as e:
         st.error(f"Model files not found: {str(e)}")
-        st.error("Please ensure the following files are in the correct directory:")
+        st.error("Please ensure the following files are in the repository root:")
         st.code("""
-        - processed_data/urdu_tokenizer.pkl
-        - processed_data/roman_tokenizer.pkl  
-        - Experiment_3_Dropout05_model.pth
+        - urdu_tokenizer.pkl
+        - roman_tokenizer.pkl  
+        - model.pth
         """)
         return None, None, None, None, None, None, None
 
@@ -677,12 +677,9 @@ tokens = urdu_tokenizer.tokenize("یہ ایک جملہ ہے")
         st.error("⚠️ Unable to load the translation model.")
         st.markdown("### 📋 Required Files:")
         st.code("""
-processed_data/
 ├── urdu_tokenizer.pkl      # Your custom BPE tokenizer for Urdu
 ├── roman_tokenizer.pkl     # Your custom BPE tokenizer for Roman Urdu
-└── ...
-
-Experiment_3_Dropout05_model.pth  # Your best trained model weights
+└── model.pth               # Your best trained model weights
         """)
         
         st.markdown("### 🔧 Setup Instructions:")
